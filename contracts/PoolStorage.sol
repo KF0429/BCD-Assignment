@@ -11,5 +11,24 @@ pragma solidity ^0.8.20;
  */
 
 contract PoolStorage{
+    uint256 public totalEther;
 
+    receive() external payable{
+        //receive ether from LendingPool and store to totalEther
+        totalEther += msg.value;
+    }
+
+    fallback() external payable{
+        //receive ether from LendingPool and store to totalEther
+        totalEther += msg.value;
+    }
+
+
+    function sendEther() external payable{
+
+    }
+
+    function withdraw() external payable{
+
+    }
 }
