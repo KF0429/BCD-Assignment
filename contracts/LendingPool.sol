@@ -59,4 +59,13 @@ contract LendingPool is Ownable{
             }
         }
     }
+
+    /**
+     * @notice Allows users to borrow specific 'Amount' of the supplied asset, 
+     * provided that the borrower already supplied enough collateral.
+     * -borrowing amount has limited up to 80% of the collateral.
+     */
+    function borrow()external payable {
+
+    }
 }
