@@ -18,7 +18,9 @@ contract LendingPool is Ownable{
     using DataStruct for DataStruct.LendingData;
 
     IERC20 public token;
-    DataStruct.LendingData [] LendingList;
+    // DataStruct.LendingData [] LendingList;
+    mapping(address => DataStruct.LendingData) public LendingList;
+    address[] public users; // Array to keep track of user addresses
 
     uint256 public tokenRate = 1 ether;
     PoolStorage public poolStorage;
@@ -43,20 +45,18 @@ contract LendingPool is Ownable{
         // step 3.1 check array existing of the wallet address
         bool addressExist = false;
 
-        for(uint i = 0;i<LendingList.length;i++){
-            if(LendingList[i].User ==msg.sender){
-                LendingList[i].EtherBalance += weiAmount;
-                LendingList[i].TokenReceived += numberOfTokens;
-                addressExist = true;
-                break;
-            }
-            if(!addressExist){
-                LendingList.push(DataStruct.LendingData({
-                User:msg.sender,
-                EtherBalance:msg.value,
-                TokenReceived:numberOfTokens
-                }));
-            }
+        if (LendingList[msg.sender].User == address(0)) {
+            // New user
+            LendingList[msg.sender] = DataStruct.LendingData({
+                User: msg.sender,
+                EtherBalance: weiAmount,
+                TokenReceived: numberOfTokens
+            });
+            users.push(msg.sender);
+        } else {
+            // Existing user
+            LendingList[msg.sender].EtherBalance += weiAmount;
+            LendingList[msg.sender].TokenReceived += numberOfTokens;
         }
     }
 
