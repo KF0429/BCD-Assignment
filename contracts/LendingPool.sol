@@ -20,7 +20,10 @@ contract LendingPool is Ownable{
     IERC20 public token;
     // DataStruct.LendingData [] LendingList;
     mapping(address => DataStruct.LendingData) public LendingList;
-    address[] public users; // Array to keep track of user addresses
+    mapping(address => DataStruct.BorrowingData) public BorrowingList;
+    // Array to keep track of user addresses
+    address[] public lendingUsers; 
+    address[] public borrowingUsers;
 
     uint256 public tokenRate = 1 ether;
     PoolStorage public poolStorage;
@@ -32,18 +35,18 @@ contract LendingPool is Ownable{
         poolStorage = PoolStorage(_poolStorageAddress);
     }
 
+    /**
+     * @notice Allows users to Supply their asset(e.g., Ether) 
+     * -Lender is supplying for interest.
+     * -Pre-condition for all borrower, they need to supply their ether as Collateral
+     * -Both of them can receive token after supply
+     */
     function Supply() external payable{
-        //step 1: applying the buy token Concept
         uint256 weiAmount = msg.value;
         uint256 numberOfTokens = weiAmount / tokenRate * 10 ** 18;
-        //msg.sender is the person who using this contarct
         token.transferFrom(owner(), msg.sender, numberOfTokens);
-        //step 2: send ether to PoolSTorage
         (bool success, ) = address(poolStorage).call{value: weiAmount}("");
         require(success, "Failed to forward Ether to PoolStorage");
-        //step 3: store the user's Data to the LendingList array (e.g., user address, etherbalance, tokens received)
-        // step 3.1 check array existing of the wallet address
-        bool addressExist = false;
 
         if (LendingList[msg.sender].User == address(0)) {
             // New user
@@ -52,7 +55,7 @@ contract LendingPool is Ownable{
                 EtherBalance: weiAmount,
                 TokenReceived: numberOfTokens
             });
-            users.push(msg.sender);
+            lendingUsersusers.push(msg.sender);
         } else {
             // Existing user
             LendingList[msg.sender].EtherBalance += weiAmount;
@@ -60,12 +63,45 @@ contract LendingPool is Ownable{
         }
     }
 
+    function getMaxBorrow(address user)internal view returns(uint256){
+        DataStruct.LendingData memory userData = LendingList[user];
+        uint256 maxBorrowAmount = (userData.EtherBalance * 80) / 100;
+        return maxBorrowAmount;
+    }
+
     /**
      * @notice Allows users to borrow specific 'Amount' of the supplied asset, 
      * provided that the borrower already supplied enough collateral.
      * -borrowing amount has limited up to 80% of the collateral.
+     * @param uint weiAmount is the amount want to borrow
      */
-    function borrow()external payable {
+    function borrow(uint weiAmount)external payable {
+        uint256 MaxBorrowAmount= getMaxBorrow(msg.sender);
+        require(weiAmount <= MaxBorrowAmount, "Borrow amount exceeds 80% of collateral");
+        poolStorage.sendEther(payable(msg.sender), weiAmount);
+        
+        if (BorrowingList[msg.sender].User == address(0)) {// New user
+            BorrowingList[msg.sender] = DataStruct.BorrowingData({
+                User: msg.sender,
+                debtAmount : weiAmount
+            });
+            borrowingUsers.push(msg.sender);
+        } else {// Existing user
+            BorrowingList[msg.sender].debtAmount += weiAmount;
+        }
+    }
+
+    function calDebtCost() internal {
 
     }
+
+    function repay() external payable {
+
+    }
+    
+    function withdraw() external payable{
+
+    }
+
+
 }
