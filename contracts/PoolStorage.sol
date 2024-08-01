@@ -19,15 +19,17 @@ contract PoolStorage{
     }
 
     fallback() external payable{
-        //receive ether from LendingPool and store to totalEther
         totalEther += msg.value;
     }
 
 
-    function sendEther() external payable{
-
+    function sendEther(address payable to, uint256 amount) external payable{
+        //send ether to lending pool contract -- using on borrow 
+        totalEther -= amount;
+        to.transfer(amount);
     }
 
+    //ignore this function first
     function withdraw() external payable{
 
     }
