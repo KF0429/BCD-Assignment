@@ -55,7 +55,7 @@ contract LendingPool is Ownable{
                 EtherBalance: weiAmount,
                 TokenReceived: numberOfTokens
             });
-            lendingUsersusers.push(msg.sender);
+            lendingUsers.push(msg.sender);
         } else {
             // Existing user
             LendingList[msg.sender].EtherBalance += weiAmount;
