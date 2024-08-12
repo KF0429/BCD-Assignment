@@ -3,14 +3,20 @@ pragma solidity ^0.8.20;
 
 library DataStruct{
     struct LendingData{
-        address User;
-        uint EtherBalance;// Collateral
-        uint TokenReceived;// token own **maybe can use to cal interest when withdraw
+        // user's address
+        address user;
+        // amount of collateral
+        uint etherBalance;
+        // amount of token
+        uint tokenReceived;
     }
 
     struct BorrowingData{
-        // make ot easy first
-        address User;
+        // user's address
+        address user;
+        // amount borrowed
         uint debtAmount;
+        // amount need to repay back to the pool
+        uint amountToRepay;
     }
 }
