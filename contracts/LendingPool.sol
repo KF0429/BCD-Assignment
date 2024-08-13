@@ -2,8 +2,8 @@
 pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import {PoolStorage} from 'contracts/PoolStorage.sol';
-import {DataStruct} from 'contracts/DataStruct.sol';
+import {PoolStorage} from './PoolStorage.sol';
+import {DataStruct} from './DataStruct.sol';
 
 /**
  * @title core contract of the system
@@ -31,8 +31,8 @@ contract LendingPool is Ownable{
 
    /**
     * @dev Construtor that initial token address and pool address
-    * @param _tokenAddress 
-    * @param _poolStorageAddress 
+    * @param _tokenAddress The address of the token contract
+    * @param _poolStorageAddress The address of PoolStorage contract
     */
     constructor(address _tokenAddress, address payable _poolStorageAddress) Ownable(msg.sender){
         token = IERC20(_tokenAddress);
@@ -51,18 +51,18 @@ contract LendingPool is Ownable{
         (bool success, ) = address(poolStorage).call{value: weiAmount}("");
         require(success, "Failed to forward Ether to PoolStorage");
 
-        if (LendingList[msg.sender].User == address(0)) {
+        if (LendingList[msg.sender].user == address(0)) {
             // New user
             LendingList[msg.sender] = DataStruct.LendingData({
-                User: msg.sender,
-                EtherBalance: weiAmount,
-                TokenReceived: numberOfTokens
+                user: msg.sender,
+                etherBalance: weiAmount,
+                tokenReceived: numberOfTokens
             });
             lendingUsers.push(msg.sender);
         } else {
             // Existing user
-            LendingList[msg.sender].EtherBalance += weiAmount;
-            LendingList[msg.sender].TokenReceived += numberOfTokens;
+            LendingList[msg.sender].etherBalance += weiAmount;
+            LendingList[msg.sender].tokenReceived += numberOfTokens;
         }
     }
 
@@ -71,9 +71,9 @@ contract LendingPool is Ownable{
      * Calculation is 80% of the Collesteral
      * @param user  The address of the User
      */
-    function getMaxBorrow(address user)internal view returns(uint256){
+    function getMaxBorrow(address user)public view returns(uint256){
         DataStruct.LendingData memory userData = LendingList[user];
-        uint256 maxBorrowAmount = (userData.EtherBalance * 80) / 100;
+        uint256 maxBorrowAmount = (userData.etherBalance * 80) / 100;
         return maxBorrowAmount;
     }
 
@@ -139,7 +139,7 @@ contract LendingPool is Ownable{
         }else{
             revert ("Address Not found");
         }
-        poolStorage.sendEther(payable(msg.sender), weiAmount);
+        poolStorage.sendEther(payable(msg.sender), weiAmount,true);
     }
 
     /**
@@ -213,7 +213,7 @@ contract LendingPool is Ownable{
         } else {
             LendingList[msg.sender] = user;
         }
-        poolStorage.sendEther123(payable(msg.sender), weiAmount,false);
+        poolStorage.sendEther(payable(msg.sender), weiAmount,false);
     }
 
 

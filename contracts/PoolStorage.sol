@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.20;
-import {PoolStorage} from 'contracts/PoolStorage.sol';
-import {DataStruct} from 'contracts/DataStruct.sol';
+import {LendingPool} from './LendingPool.sol';
+import {DataStruct} from './DataStruct.sol';
 
 /**
  * @title Pool Storage
@@ -46,7 +46,6 @@ contract PoolStorage{
         if(isBorrow){//true = borrow
             if (userData.user != address(0) && borrowingData.user == address(0)) {
                 require(amount <= lendingPool.getMaxBorrow(msg.sender), "Borrow amount exceeds 80% of collateral");
-
             } else if (userData.user != address(0) && borrowingData.user != address(0)) {
                 require(borrowingData.debtAmount + amount <= lendingPool.getMaxBorrow(msg.sender), "Borrow amount exceeds 80% of collateral");
             }
