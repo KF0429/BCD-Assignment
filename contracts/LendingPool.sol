@@ -28,6 +28,7 @@ contract LendingPool is Ownable{
 
     uint256 public tokenRate = 1 ether;
     PoolStorage public poolStorage;
+
    /**
     * @dev Construtor that initial token address and pool address
     * @param _tokenAddress 
@@ -66,7 +67,7 @@ contract LendingPool is Ownable{
     }
 
     /**
-     * @notice This function is used to get Maximum borrowing amount,
+     * @notice Returns the maximum borrowing amount for a user, calculated as 80% of their collateral.
      * Calculation is 80% of the Collesteral
      * @param user  The address of the User
      */
@@ -77,7 +78,9 @@ contract LendingPool is Ownable{
     }
 
     /**
-     * @dev Update the amount to repay after user taking loan
+     * @dev Update the amount to repay after user takes loan
+     * This function recalculates the amount the user needs to repay, including a 4% interest on the total debt.
+     * The resulting value is stored back in the `amountToRepay` field of the user's borrowing data.
      */
     function UpdateInterestAmount() internal {
         uint256 totalDebt = BorrowingList[msg.sender].debtAmount;
@@ -88,13 +91,34 @@ contract LendingPool is Ownable{
     }
 
     /**
-     * @notice Allows users to borrow specific 'Amount' of the supplied asset
+     * @notice Retrieves the lending data associated with the given user's address.
+     * @dev This function allows external contracts or users to view the lending information for a specific lender.
+     * @param user The address of the lender
+     */
+    function getLendingData(address user) external view returns (DataStruct.LendingData memory) {
+        return LendingList[user];
+    }
+
+    /**
+     * @notice Retrieves the borrowing data associated with the given user's address.
+     * @dev This function allows external contracts or users to view the borrowing information for a specific borrower.
+     * @param user The address of the borrower
+     */
+    function getBorrowingData(address user) external view returns (DataStruct.BorrowingData memory){
+        return BorrowingList[user];
+    }
+
+    /**
+     * @notice Allows users to borrow specific 'Amount' of the supplied asset.
+     *         The borrowing amount is limited to 80% of the user's collateral.
+     *         Interest on the borrowed amount is calculated at a rate of 4%.
+     * 
      * Requirment :
      * 
      * - provided that the borrower already supplied enough collateral.
      * - borrowing amount has limited up to 80% of the collateral.
      * 
-     * @param uint weiAmount is the amount want to borrow
+     * @param weiAmount The amount of Ether the user wants to borrow.
      */
     function borrow(uint weiAmount)external payable {
         uint256 debtCost = (weiAmount * 4)/100;
@@ -104,7 +128,6 @@ contract LendingPool is Ownable{
             require(BorrowingList[msg.sender].debtAmount + weiAmount <= getMaxBorrow(msg.sender), "Borrow amount exceeds limit");
             BorrowingList[msg.sender].debtAmount += weiAmount;
             UpdateInterestAmount();
-            //update amount to repay function
         }else if(LendingList[msg.sender].user != address(0) && BorrowingList[msg.sender].user == address(0)){//first borrow of the address
             require(weiAmount <= getMaxBorrow(msg.sender),"is Over 80%");
             BorrowingList[msg.sender] = DataStruct.BorrowingData({
@@ -118,8 +141,16 @@ contract LendingPool is Ownable{
         }
         poolStorage.sendEther(payable(msg.sender), weiAmount);
     }
+
     /**
-     * @dev
+     * @notice Repays the borrowed amount by transferring the equivalent Ether back to the PoolStorage contract.
+     *         The repayment amount is deducted from both the user's outstanding debt and the total amount to repay.
+     *         If the full repayment is made, the user's borrowing record is removed.
+     * 
+     * Requirement:
+     *  - The caller must have an oustanding debt.
+     *  - The caller must have an amount to repay.
+     *  - The repayment amount must not exceed the amount to repay.
      */
     function repay() external payable {
         uint256 weiAmount = msg.value;
@@ -148,7 +179,11 @@ contract LendingPool is Ownable{
     }
     
     /**
-     * @notice Allow lender withdraw their Ether from 'PoolStorage'.
+     * @dev This function allows a user (lender) to withdraw a specific amount of Ether they previously deposited into the lending pool.
+     *      The function ensures the user has sufficient Ether and tokens to perform the withdrawal.
+     *      It then transfers the required tokens back to the contract owner and adjusts the user's balances.
+     *      If the user withdraws all their Ether, they are removed from the lending list.
+     * 
      * Requirement :
      * 
      * - the address must have specific amount of ether in the Pool
@@ -158,8 +193,8 @@ contract LendingPool is Ownable{
         DataStruct.LendingData memory user = LendingList[msg.sender];
         uint256 tokensToReturn = (weiAmount / tokenRate) * 10 ** 18;
         
-        require(user.etherBalance >= weiAmount, "Insufficient balance to withdraw..lending");        
-        require(token.balanceOf(msg.sender) >= tokensToReturn, "Insufficient token balance to return..lending 2");
+        require(user.etherBalance >= weiAmount, "Insufficient balance to withdraw");        
+        require(token.balanceOf(msg.sender) >= tokensToReturn, "Insufficient token balance to return");
 
         token.transferFrom(msg.sender, owner(), tokensToReturn);
 
