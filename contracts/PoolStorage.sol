@@ -27,11 +27,17 @@ contract PoolStorage{
     }
 
     /**
-     * @notice send Ether to the address
-     * @dev Through sendEther function, allow 'LendingPool' Contract to call this function on withdraw and borrow request
-     * @param to Send to the address
-     * @param amount amoun to send
-     * @param isBorrow A boolean to identify the action (true = borrow, false = withdraw)
+     * @notice Sends Ether to the specified address.
+     * @dev This function allows the 'LendingPool' contract to initiate Ether transfers either for borrowing or withdrawal purposes.
+     * @param to The address to which the Ether will be sent.
+     * @param amount The amount of Ether to send.
+     * @param isBorrow A boolean to identify the action :
+     *                  - `true` = borrow, false = withdraw
+     *                  - `false` for withdrawing Ether.
+     * 
+     * Requirements:
+     * - If `isBorrow` is true, the borrower must have enough collateral to cover the borrowed amount, capped at 80% of their collateral.
+     * - If `isBorrow` is false, the lender must have sufficient Ether balance to withdraw the requested amount.
      */
     function sendEther(address payable to, uint256 amount,bool isBorrow) external{
         DataStruct.LendingData memory userData = lendingPool.getLendingData(msg.sender);
