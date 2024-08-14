@@ -1,7 +1,7 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
 const DeploymentModule = buildModule("DeploymentModule", (m) => {
-  const LiangToken = m.contract("LiangToken");
+  const LiangToken = m.contract("CryptoLend");
   const ICO = m.contract("ICO", [LiangToken]);
 
   const owner = m.getAccount(0);
