@@ -46,6 +46,9 @@ export function RepayLoan() {
       return;
     }
 
+    // Notify user that the transaction is in progress
+    print(`Repayment process started`, "info");
+
     writeContract({
       address: contractAddress ?? undefined,
       abi: LendingPoolABI.abi,
