@@ -28,7 +28,10 @@ export function WithdrawEther() {
           />
         </CardContent>
         <CardFooter>
-          <Button className="w-full" variant="outline">
+          <Button
+            className="w-full w-full dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900"
+            variant="outline"
+          >
             Continue
           </Button>
         </CardFooter>

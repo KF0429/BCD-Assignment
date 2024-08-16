@@ -26,7 +26,7 @@ export function BuyToken() {
   const { error: estimateError } = useSimulateContract({
     address: contractAddress ?? undefined,
     abi: lendingpool.abi,
-    functionName: "lend_token",
+    functionName: "Supply",
     value: parseEther(amount),
   });
 
@@ -47,7 +47,7 @@ export function BuyToken() {
     writeContract({
       address: contractAddress ?? undefined,
       abi: lendingpool.abi,
-      functionName: "lend_token",
+      functionName: "Supply",
       value: parseEther(amount),
     });
   };
@@ -69,7 +69,7 @@ export function BuyToken() {
       <Card className="w-[350px]">
         <CardHeader>
           <CardDescription className="text-xl font-bold text-white-800">
-            Withdraw
+            Asset To Supply
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -83,7 +83,7 @@ export function BuyToken() {
         <CardFooter>
           <Button
             onClick={handleBuyTransaction}
-            className="w-full"
+            className="w-full dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900"
             variant="outline"
           >
             Continue
