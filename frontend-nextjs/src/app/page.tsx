@@ -4,16 +4,16 @@
 
 import React from "react";
 import { Header } from "./components/Header";
-import { Footer } from "./components/Footer";
-import { BuyToken } from "./components/BuyToken";
+import { ActionTab } from "./components/ActionTab";
 
 export default function Home() {
   return (
     <>
       <div className="flex flex-col min-h-screen">
         <Header />
-        <BuyToken />
-        <Footer />
+        <div className="flex-grow flex justify-center items-center">
+          <ActionTab />
+        </div>
       </div>
     </>
   );

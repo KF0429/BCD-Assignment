@@ -4,20 +4,29 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
 } from "wagmi";
-import { Address, parseEther } from "viem";
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Address, parseEther } from "viem";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
+import lendingpool from "@/abi/lendingPool.json";
+import { lendingPoolAddress } from "@/utils/smartContractAddress";
 import { print } from "@/utils/toast";
-import ico from "@/abi/ico.json";
-import { ICOContractAddress } from "@/utils/smartContractAddress";
 
 export function BuyToken() {
-  const contractAddress = ICOContractAddress as Address;
+  const contractAddress = lendingPoolAddress as Address;
   const [amount, setAmount] = useState("0.01");
 
   const { error: estimateError } = useSimulateContract({
     address: contractAddress ?? undefined,
-    abi: ico.abi,
-    functionName: "buyToken",
+    abi: lendingpool.abi,
+    functionName: "Supply",
     value: parseEther(amount),
   });
 
@@ -34,11 +43,11 @@ export function BuyToken() {
       print(`Transaction failed: ${estimateError.cause}`, "error");
       return;
     }
-
+    console.log("error123");
     writeContract({
       address: contractAddress ?? undefined,
-      abi: ico.abi,
-      functionName: "buyToken",
+      abi: lendingpool.abi,
+      functionName: "Supply",
       value: parseEther(amount),
     });
   };
@@ -57,25 +66,32 @@ export function BuyToken() {
 
   return (
     <section className="flex-grow flex justify-center items-center">
-      <div className="card shadow-md rounded-lg overflow-hidden max-w-sm">
-        <div className="p-4">
-          <h6 className="text-xl font-bold text-white-800">Buy Token</h6>
-          <div className="flex mt-4">
-            <input
-              onChange={(e) => handleQuantityInput(e)}
-              type="number"
-              className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              placeholder="Enter quantity"
-            />
-            <button
-              onClick={handleBuyTransaction}
-              className="ml-2 py-2 px-4 bg-indigo-500 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Buy
-            </button>
-          </div>
-        </div>
-      </div>
+      <Card className="w-[350px]">
+        <CardHeader>
+          <CardDescription className="text-xl font-bold text-white-800">
+            Asset To Supply
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Input
+            onChange={(e) => handleQuantityInput(e)}
+            className="text-black"
+            type="number"
+            placeholder="Amount to supply"
+          />
+        </CardContent>
+        <CardFooter>
+          <Button
+            onClick={handleBuyTransaction}
+            className="w-full dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900"
+            variant="outline"
+          >
+            Continue
+          </Button>
+        </CardFooter>
+      </Card>
     </section>
   );
 }
+
+export default BuyToken;
